@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Htstr</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
+            <h1>Htstr</h1>
+            <p>Enhanced playback for Hitster cards</p>
+            <button id="login-btn" class="btn-primary">Login with Spotify</button>
+            <p class="hint">Requires Spotify Premium</p>
+        </div>
+
+        <!-- Main Screen -->
+        <div id="main-screen" class="screen hidden">
+            <header>
+                <h1>Htstr</h1>
+                <button id="back-to-settings-btn" class="btn-icon">Settings</button>
+            </header>
+
+            <div id="scanner-container">
+                <video id="scanner-video" playsinline></video>
+                <div id="scanner-overlay"></div>
+            </div>
+
+            <div id="player-container" class="hidden">
+                <div id="now-playing">
+                    <div id="track-info">Scan a card to play</div>
+                    <div id="progress-bar">
+                        <div id="progress-fill"></div>
+                    </div>
+                    <div id="time-display">0:00 / 0:30</div>
+                </div>
+                <div id="controls">
+                    <button id="play-btn" class="btn-control">Play</button>
+                    <button id="stop-btn" class="btn-control">Stop</button>
+                    <button id="rescan-btn" class="btn-control">Scan Again</button>
+                </div>
+            </div>
+
+            <div id="status-message"></div>
+        </div>
+
+        <!-- Settings Screen (shown after login, before scanning) -->
+        <div id="settings-screen" class="screen hidden">
+            <h1>Htstr</h1>
+            <div class="settings-card">
+                <h2>Game Settings</h2>
+                <div class="setting">
+                    <label for="duration-select">Playback Duration</label>
+                    <select id="duration-select">
+                        <option value="15">15 seconds</option>
+                        <option value="30" selected>30 seconds</option>
+                        <option value="45">45 seconds</option>
+                        <option value="60">60 seconds</option>
+                        <option value="0">Full song</option>
+                    </select>
+                </div>
+                <div class="setting">
+                    <label for="position-select">Start Position</label>
+                    <select id="position-select">
+                        <option value="start">From song start</option>
+                        <option value="random">Completely random</option>
+                        <option value="first-half">Random (1st half)</option>
+                        <option value="second-half">Random (2nd half)</option>
+                    </select>
+                </div>
+                <button id="start-game-btn" class="btn-primary">Start Scanning</button>
+                <button id="logout-btn" class="btn-secondary">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
