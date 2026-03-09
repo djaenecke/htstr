@@ -1,7 +1,9 @@
 // Configuration
 const CONFIG = {
     clientId: '1d537507d95248e9a3264b0dff4cc552',
-    redirectUri: 'http://127.0.0.1:8000/',
+    redirectUri: window.location.hostname === '127.0.0.1'
+        ? 'http://127.0.0.1:8000/'
+        : 'https://djaenecke.github.io/htstr/',
     scopes: [
         'streaming',
         'user-read-email',
