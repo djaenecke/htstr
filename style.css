@@ -312,6 +312,81 @@ body {
     width: 100%;
 }
 
+/* Card flip */
+#card-container {
+    perspective: 1000px;
+    margin-top: 20px;
+}
+
+#card {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+    cursor: default;
+}
+
+#card.flippable {
+    cursor: pointer;
+}
+
+#card.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.card-back-face {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+    border: 3px solid #1db954;
+}
+
+.card-logo {
+    font-size: 60px;
+    color: #1db954;
+    font-weight: bold;
+}
+
+.card-front {
+    background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+    border: 3px solid #1db954;
+    transform: rotateY(180deg);
+    text-align: center;
+}
+
+.card-artist {
+    font-size: 1rem;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.card-year {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1db954;
+    margin-bottom: 10px;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 600;
+}
+
 /* PWA Install Prompt */
 @media (display-mode: standalone) {
     body {

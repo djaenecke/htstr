@@ -82,7 +82,11 @@ const elements = {
     rescanBtn: document.getElementById('rescan-btn'),
     statusMessage: document.getElementById('status-message'),
     durationSelect: document.getElementById('duration-select'),
-    positionSelect: document.getElementById('position-select')
+    positionSelect: document.getElementById('position-select'),
+    card: document.getElementById('card'),
+    cardArtist: document.querySelector('.card-artist'),
+    cardYear: document.querySelector('.card-year'),
+    cardTitle: document.querySelector('.card-title')
 };
 
 // Initialize
@@ -185,6 +189,7 @@ function setupEventListeners() {
     elements.playBtn.addEventListener('click', playCurrentTrack);
     elements.stopBtn.addEventListener('click', stopPlayback);
     elements.rescanBtn.addEventListener('click', startScanning);
+    elements.card.addEventListener('click', flipCard);
 }
 
 function showScreen(name) {
@@ -332,6 +337,8 @@ async function startScanning() {
     stopPlayback();
     elements.playerContainer.classList.add('hidden');
     elements.scannerContainer.classList.remove('hidden');
+    // Reset card to back side
+    elements.card.classList.remove('flipped', 'flippable');
 
     try {
         scannerStream = await navigator.mediaDevices.getUserMedia({
@@ -454,6 +461,12 @@ async function handleCard(cardInfo) {
     showStatus(`Found: Card #${cardInfo.cardNumber}`);
     elements.trackInfo.textContent = `Card #${cardInfo.cardNumber}`;
     elements.playerContainer.classList.remove('hidden');
+
+    // Set up card display (back facing up, not flippable yet)
+    elements.cardArtist.textContent = card.artist;
+    elements.cardYear.textContent = card.year;
+    elements.cardTitle.textContent = card.title;
+    elements.card.classList.remove('flipped', 'flippable');
 
     // Search Spotify for track by ISRC
     try {
@@ -588,7 +601,8 @@ async function stopPlayback() {
     }
 
     if (state.currentTrack) {
-        elements.trackInfo.textContent = `Card - Stopped`;
+        elements.trackInfo.textContent = `Card - Tap card to reveal`;
+        elements.card.classList.add('flippable');
     }
 }
 
@@ -597,6 +611,13 @@ function formatTime(ms) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function flipCard() {
+    if (elements.card.classList.contains('flippable')) {
+        elements.card.classList.add('flipped');
+        elements.trackInfo.textContent = `Card - Revealed`;
+    }
 }
 
 // Service Worker Registration
