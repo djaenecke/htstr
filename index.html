@@ -47,6 +47,7 @@
                     <button id="rescan-btn" class="btn-control">Scan Again</button>
                 </div>
                 <div id="card-container">
+                    <div id="edition-display" class="hidden"></div>
                     <div id="card" class="card-back">
                         <div class="card-face card-front">
                             <div class="card-artist"></div>
@@ -86,6 +87,12 @@
                         <option value="first-half">Random (1st half)</option>
                         <option value="second-half">Random (2nd half)</option>
                     </select>
+                </div>
+                <div class="setting checkbox-setting">
+                    <label>
+                        <input type="checkbox" id="show-edition">
+                        Show Edition
+                    </label>
                 </div>
                 <button id="start-game-btn" class="btn-primary">Start Scanning</button>
                 <button id="logout-btn" class="btn-secondary">Logout</button>

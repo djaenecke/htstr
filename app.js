@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.4';
+const VERSION = '1.0.5';
 
 // Configuration
 const CONFIG = {
@@ -61,7 +61,8 @@ const state = {
     playbackTimer: null,
     settings: {
         duration: 30,
-        startPosition: 'start' // 'start', 'random', 'first-half', 'second-half'
+        startPosition: 'start', // 'start', 'random', 'first-half', 'second-half'
+        showEdition: false
     }
 };
 
@@ -86,6 +87,8 @@ const elements = {
     statusMessage: document.getElementById('status-message'),
     durationSelect: document.getElementById('duration-select'),
     positionSelect: document.getElementById('position-select'),
+    showEditionCheckbox: document.getElementById('show-edition'),
+    editionDisplay: document.getElementById('edition-display'),
     card: document.getElementById('card'),
     cardArtist: document.querySelector('.card-artist'),
     cardYear: document.querySelector('.card-year'),
@@ -168,12 +171,14 @@ function loadSettings() {
     }
     elements.durationSelect.value = state.settings.duration;
     elements.positionSelect.value = state.settings.startPosition;
+    elements.showEditionCheckbox.checked = state.settings.showEdition;
     document.getElementById('version-display').textContent = `v${VERSION}`;
 }
 
 function saveSettings() {
     state.settings.duration = parseInt(elements.durationSelect.value) || 30;
     state.settings.startPosition = elements.positionSelect.value;
+    state.settings.showEdition = elements.showEditionCheckbox.checked;
     localStorage.setItem('hitster_settings', JSON.stringify(state.settings));
 }
 
@@ -355,6 +360,7 @@ async function startScanning() {
     elements.scannerContainer.classList.remove('hidden');
     // Reset card to back side
     elements.card.classList.remove('flipped', 'flippable');
+    elements.editionDisplay.classList.add('hidden');
 
     try {
         scannerStream = await navigator.mediaDevices.getUserMedia({
@@ -496,6 +502,14 @@ async function handleCard(cardInfo) {
     elements.cardYear.textContent = card.year;
     elements.cardTitle.textContent = card.title;
     elements.card.classList.remove('flipped', 'flippable');
+
+    // Show edition if enabled
+    if (state.settings.showEdition) {
+        elements.editionDisplay.textContent = result.key.replace('hitster-', '').toUpperCase();
+        elements.editionDisplay.classList.remove('hidden');
+    } else {
+        elements.editionDisplay.classList.add('hidden');
+    }
 
     // Search Spotify for track
     try {
