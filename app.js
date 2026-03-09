@@ -1,3 +1,6 @@
+// Version - increment with each release
+const VERSION = '1.0.1';
+
 // Configuration
 const CONFIG = {
     clientId: '1d537507d95248e9a3264b0dff4cc552',
@@ -165,6 +168,7 @@ function loadSettings() {
     }
     elements.durationSelect.value = state.settings.duration;
     elements.positionSelect.value = state.settings.startPosition;
+    document.getElementById('version-display').textContent = `v${VERSION}`;
 }
 
 function saveSettings() {

@@ -79,6 +79,14 @@ body {
     font-size: 1.3rem;
 }
 
+#version-display {
+    position: fixed;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.75rem;
+    color: #555;
+}
+
 /* Buttons */
 .btn-primary {
     background: #1db954;
