@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.2';
+const VERSION = '1.0.3';
 
 // Configuration
 const CONFIG = {
@@ -290,21 +290,33 @@ async function loadCardData() {
             const text = await response.text();
             const lines = text.trim().split('\n');
 
+            // Parse header to find column indices
+            const header = parseCSVLine(lines[0]);
+            const colIndex = {};
+            header.forEach((col, i) => {
+                const name = col.toLowerCase().replace('#', '').trim();
+                if (name === 'card') colIndex.card = i;
+                if (name === 'title') colIndex.title = i;
+                if (name === 'artist') colIndex.artist = i;
+                if (name === 'year') colIndex.year = i;
+                if (name === 'isrc') colIndex.isrc = i;
+            });
+
             state.cardData[edition] = {};
 
-            // Skip header
+            // Parse data rows
             for (let i = 1; i < lines.length; i++) {
                 const cols = parseCSVLine(lines[i]);
-                if (cols.length >= 6) {
-                    const cardNum = parseInt(cols[0]);
-                    state.cardData[edition][cardNum] = {
-                        title: cols[1],
-                        artist: cols[2],
-                        year: cols[3],
-                        isrc: cols[5]
-                    };
-                    totalCards++;
-                }
+                const cardNum = parseInt(cols[colIndex.card]);
+                if (isNaN(cardNum)) continue;
+
+                state.cardData[edition][cardNum] = {
+                    title: cols[colIndex.title] || '',
+                    artist: cols[colIndex.artist] || '',
+                    year: cols[colIndex.year] || '',
+                    isrc: colIndex.isrc !== undefined ? cols[colIndex.isrc] : null
+                };
+                totalCards++;
             }
         } catch (e) {
             console.warn(`Failed to load ${edition}`, e);
@@ -402,15 +414,26 @@ function scanFrame() {
 }
 
 function parseHitsterUrl(url) {
-    // Match patterns like: http://www.hitstergame.com/de/aaaa0026/00040
-    const match = url.match(/hitstergame\.com\/([a-z]+)(?:-[a-z]+)?\/([a-z0-9]+)\/(\d+)/i);
-    if (match) {
+    // Match pattern with edition: http://www.hitstergame.com/de/aaaa0026/00040
+    const matchWithEdition = url.match(/hitstergame\.com\/([a-z]+)(?:-[a-z]+)?\/([a-z]{4}\d+)\/(\d+)/i);
+    if (matchWithEdition) {
         return {
-            locale: match[1],      // e.g., 'de', 'fr', 'nl'
-            edition: match[2],      // e.g., 'aaaa0026'
-            cardNumber: parseInt(match[3])
+            locale: matchWithEdition[1],
+            edition: matchWithEdition[2],
+            cardNumber: parseInt(matchWithEdition[3])
         };
     }
+
+    // Match pattern without edition (original game): http://www.hitstergame.com/de/00028
+    const matchOriginal = url.match(/hitstergame\.com\/([a-z]+)(?:-[a-z]+)?\/(\d+)$/i);
+    if (matchOriginal) {
+        return {
+            locale: matchOriginal[1],
+            edition: null,  // No edition = original game
+            cardNumber: parseInt(matchOriginal[2])
+        };
+    }
+
     return null;
 }
 
@@ -423,7 +446,7 @@ function findCardEdition(locale, edition, cardNumber) {
         'pl': 'pl',
         'hu': 'hu',
         'ca': 'ca',
-        'en': 'nordics', // fallback
+        'en': 'nordics',
         'se': 'nordics',
         'no': 'nordics',
         'dk': 'nordics',
@@ -433,12 +456,14 @@ function findCardEdition(locale, edition, cardNumber) {
     const csvLocale = localeMap[locale] || locale;
 
     // Try specific edition first: hitster-{locale}-{edition}
-    const specificKey = `hitster-${csvLocale}-${edition}`;
-    if (state.cardData[specificKey] && state.cardData[specificKey][cardNumber]) {
-        return { key: specificKey, card: state.cardData[specificKey][cardNumber] };
+    if (edition) {
+        const specificKey = `hitster-${csvLocale}-${edition}`;
+        if (state.cardData[specificKey] && state.cardData[specificKey][cardNumber]) {
+            return { key: specificKey, card: state.cardData[specificKey][cardNumber] };
+        }
     }
 
-    // Try generic locale: hitster-{locale}
+    // Try generic locale (original game): hitster-{locale}
     const genericKey = `hitster-${csvLocale}`;
     if (state.cardData[genericKey] && state.cardData[genericKey][cardNumber]) {
         return { key: genericKey, card: state.cardData[genericKey][cardNumber] };
@@ -472,9 +497,9 @@ async function handleCard(cardInfo) {
     elements.cardTitle.textContent = card.title;
     elements.card.classList.remove('flipped', 'flippable');
 
-    // Search Spotify for track by ISRC
+    // Search Spotify for track
     try {
-        const track = await searchSpotifyByISRC(card.isrc);
+        const track = await searchSpotify(card);
         if (track) {
             state.currentTrack = {
                 uri: track.uri,
@@ -493,8 +518,30 @@ async function handleCard(cardInfo) {
     }
 }
 
-async function searchSpotifyByISRC(isrc) {
-    const response = await fetch(`https://api.spotify.com/v1/search?q=isrc:${isrc}&type=track&limit=1`, {
+async function searchSpotify(card) {
+    // Try ISRC first if available
+    if (card.isrc) {
+        const response = await fetch(`https://api.spotify.com/v1/search?q=isrc:${card.isrc}&type=track&limit=1`, {
+            headers: { 'Authorization': `Bearer ${state.accessToken}` }
+        });
+
+        if (!response.ok && response.status === 401) {
+            logout();
+            throw new Error('Auth failed');
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.tracks.items[0]) {
+                return data.tracks.items[0];
+            }
+        }
+        // ISRC not found, fall through to title+artist search
+    }
+
+    // Search by title + artist
+    const query = `track:${card.title} artist:${card.artist}`;
+    const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`, {
         headers: { 'Authorization': `Bearer ${state.accessToken}` }
     });
 
