@@ -511,9 +511,9 @@ async function playCurrentTrack() {
                 startPosition = Math.floor(Math.random() * Math.min(halfPoint, maxStart));
                 break;
             case 'second-half':
-                // Random position in second half
-                const minStart = Math.max(halfPoint, 0);
-                startPosition = minStart + Math.floor(Math.random() * (maxStart - minStart));
+                // Random position in second half, but clamp to ensure playback fits
+                const minStart = Math.min(halfPoint, maxStart);
+                startPosition = minStart + Math.floor(Math.random() * (maxStart - minStart + 1));
                 break;
             case 'random':
                 startPosition = Math.floor(Math.random() * maxStart);
