@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.5';
+const VERSION = '1.0.6';
 
 // Configuration
 const CONFIG = {
@@ -50,6 +50,27 @@ const EDITIONS = [
     'hitster-nordics', 'hitster-pl-aaae0001', 'hitster-hu-aaae0003',
     'hitster-ca-aaad0001'
 ];
+
+// Human-readable edition names
+const EDITION_NAMES = {
+    'hitster-de': 'Original Game',
+    'hitster-de-aaaa0007': 'Schlager Party',
+    'hitster-de-aaaa0012': 'Summer Hits',
+    'hitster-de-aaaa0015': 'Guilty Pleasures',
+    'hitster-de-aaaa0019': 'Bingo',
+    'hitster-de-aaaa0025': 'Rock',
+    'hitster-de-aaaa0026': 'Movies & TV Soundtracks',
+    'hitster-de-aaaa0039': 'Christmas',
+    'hitster-de-aaaa0040': 'Celebration',
+    'hitster-de-aaaa0042': 'Holiday Mix',
+    'hitster-fr': 'Original (FR)',
+    'hitster-fr-aaaa0031': 'Chansons Francaises',
+    'hitster-nl': '100% NL',
+    'hitster-nordics': 'Nordic Edition',
+    'hitster-pl-aaae0001': 'Polish Edition',
+    'hitster-hu-aaae0003': 'Hungarian Edition',
+    'hitster-ca-aaad0001': 'Canadian Edition'
+};
 
 // App State
 const state = {
@@ -505,7 +526,8 @@ async function handleCard(cardInfo) {
 
     // Show edition if enabled
     if (state.settings.showEdition) {
-        elements.editionDisplay.textContent = result.key.replace('hitster-', '').toUpperCase();
+        const editionName = EDITION_NAMES[result.key] || result.key.replace('hitster-', '').toUpperCase();
+        elements.editionDisplay.textContent = editionName;
         elements.editionDisplay.classList.remove('hidden');
     } else {
         elements.editionDisplay.classList.add('hidden');
