@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.11';
+const VERSION = '1.0.12';
 
 // Configuration
 const CONFIG = {
@@ -695,8 +695,13 @@ async function replayTrack() {
     // Reset to original start position and full duration
     const isFullSong = state.settings.duration === 0;
     const duration = isFullSong ? state.currentTrack.duration : state.settings.duration * 1000;
+    state.playback.totalDuration = duration;
     state.playback.remainingTime = duration;
     state.playback.currentPosition = state.playback.startPosition;
+
+    // Re-enable play button and reset timer display
+    elements.playBtn.disabled = false;
+    elements.timerProgress.style.strokeDashoffset = 283;
 
     await startPlaybackAt(state.playback.startPosition, duration);
 }
@@ -750,7 +755,7 @@ async function startPlaybackAt(position, duration) {
             }
 
             if (remaining <= 0) {
-                stopPlayback();
+                stopPlayback(true); // Time expired
             }
         }, 100);
 
@@ -760,7 +765,7 @@ async function startPlaybackAt(position, duration) {
     }
 }
 
-async function stopPlayback() {
+async function stopPlayback(timeExpired = false) {
     state.playback.isPlaying = false;
 
     if (state.playbackTimer) {
@@ -771,7 +776,9 @@ async function stopPlayback() {
     // Don't reset timer display - keep it showing remaining time
     elements.timerProgress.classList.remove('countdown');
     elements.playerContainer.classList.remove('countdown');
-    elements.playBtn.disabled = false;
+
+    // Keep play button disabled if time expired, enable only for manual stop
+    elements.playBtn.disabled = timeExpired;
 
     if (state.player) {
         try {
