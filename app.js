@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.9';
+const VERSION = '1.0.10';
 
 // Configuration
 const CONFIG = {
@@ -80,6 +80,12 @@ const state = {
     cardData: {}, // { 'edition-key': { cardNum: {...} } }
     currentTrack: null,
     playbackTimer: null,
+    playback: {
+        startPosition: 0,      // Original calculated start position
+        currentPosition: 0,    // Current position (for resume)
+        remainingTime: 0,      // Remaining time (for resume)
+        isPlaying: false
+    },
     settings: {
         duration: 30,
         startPosition: 'start', // 'start', 'random', 'first-half', 'second-half'
@@ -104,6 +110,7 @@ const elements = {
     timeDisplay: document.getElementById('time-display'),
     playBtn: document.getElementById('play-btn'),
     stopBtn: document.getElementById('stop-btn'),
+    replayBtn: document.getElementById('replay-btn'),
     rescanBtn: document.getElementById('rescan-btn'),
     statusMessage: document.getElementById('status-message'),
     durationSelect: document.getElementById('duration-select'),
@@ -251,8 +258,9 @@ function setupEventListeners() {
         showScreen('settings');
     });
     elements.logoutBtn.addEventListener('click', logout);
-    elements.playBtn.addEventListener('click', playCurrentTrack);
+    elements.playBtn.addEventListener('click', resumePlayback);
     elements.stopBtn.addEventListener('click', stopPlayback);
+    elements.replayBtn.addEventListener('click', replayTrack);
     elements.rescanBtn.addEventListener('click', startScanning);
     elements.card.addEventListener('click', flipCard);
 }
@@ -417,6 +425,9 @@ async function startScanning() {
     // Reset card to back side
     elements.card.classList.remove('flipped', 'flippable');
     elements.editionDisplay.classList.add('hidden');
+    // Reset timer display
+    elements.timerProgress.style.strokeDashoffset = 283;
+    elements.timeDisplay.textContent = '0:00';
 
     try {
         scannerStream = await navigator.mediaDevices.getUserMedia({
@@ -642,11 +653,9 @@ async function playCurrentTrack() {
 
         switch (state.settings.startPosition) {
             case 'first-half':
-                // Random position in first half, but ensure playback fits
                 startPosition = Math.floor(Math.random() * Math.min(halfPoint, maxStart));
                 break;
             case 'second-half':
-                // Random position in second half, but clamp to ensure playback fits
                 const minStart = Math.min(halfPoint, maxStart);
                 startPosition = minStart + Math.floor(Math.random() * (maxStart - minStart + 1));
                 break;
@@ -655,6 +664,43 @@ async function playCurrentTrack() {
                 break;
         }
     }
+
+    // Store initial playback state
+    state.playback.startPosition = startPosition;
+    state.playback.remainingTime = duration;
+    state.playback.currentPosition = startPosition;
+
+    await startPlaybackAt(startPosition, duration);
+}
+
+async function resumePlayback() {
+    if (!state.currentTrack || !state.deviceId) return;
+    if (state.playback.isPlaying) return;
+
+    // Resume from where we stopped
+    await startPlaybackAt(state.playback.currentPosition, state.playback.remainingTime);
+}
+
+async function replayTrack() {
+    if (!state.currentTrack || !state.deviceId) return;
+
+    // Stop current playback first
+    if (state.playbackTimer) {
+        clearInterval(state.playbackTimer);
+        state.playbackTimer = null;
+    }
+
+    // Reset to original start position and full duration
+    const isFullSong = state.settings.duration === 0;
+    const duration = isFullSong ? state.currentTrack.duration : state.settings.duration * 1000;
+    state.playback.remainingTime = duration;
+    state.playback.currentPosition = state.playback.startPosition;
+
+    await startPlaybackAt(state.playback.startPosition, duration);
+}
+
+async function startPlaybackAt(position, duration) {
+    const track = state.currentTrack;
 
     try {
         await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${state.deviceId}`, {
@@ -665,26 +711,30 @@ async function playCurrentTrack() {
             },
             body: JSON.stringify({
                 uris: [track.uri],
-                position_ms: startPosition
+                position_ms: position
             })
         });
 
+        state.playback.isPlaying = true;
         elements.playBtn.disabled = true;
         elements.trackInfo.textContent = `Card - Playing...`;
 
         // Start progress timer
         const startTime = Date.now();
-        const endTime = startTime + duration;
-        const countdownThreshold = 10000; // 10 seconds
+        const countdownThreshold = 10000;
+        const circumference = 283;
 
         if (state.playbackTimer) clearInterval(state.playbackTimer);
-        const circumference = 283; // 2 * PI * 45
         state.playbackTimer = setInterval(() => {
             const elapsed = Date.now() - startTime;
             const remaining = Math.max(0, duration - elapsed);
             const progress = elapsed / duration;
 
-            // Update circular progress (stroke-dashoffset decreases as time passes)
+            // Track current position for resume
+            state.playback.currentPosition = position + elapsed;
+            state.playback.remainingTime = remaining;
+
+            // Update circular progress
             const offset = circumference * (1 - progress);
             elements.timerProgress.style.strokeDashoffset = offset;
             elements.timeDisplay.textContent = formatTime(remaining);
@@ -707,12 +757,14 @@ async function playCurrentTrack() {
 }
 
 async function stopPlayback() {
+    state.playback.isPlaying = false;
+
     if (state.playbackTimer) {
         clearInterval(state.playbackTimer);
         state.playbackTimer = null;
     }
 
-    elements.timerProgress.style.strokeDashoffset = 283;
+    // Don't reset timer display - keep it showing remaining time
     elements.timerProgress.classList.remove('countdown');
     elements.playerContainer.classList.remove('countdown');
     elements.playBtn.disabled = false;
