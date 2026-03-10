@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hitster-v2';
+const CACHE_NAME = 'hitster-v3';
 const ASSETS = [
     './',
     './index.html',
@@ -47,6 +47,11 @@ self.addEventListener('fetch', event => {
     // Don't cache Spotify API calls
     if (event.request.url.includes('spotify.com') ||
         event.request.url.includes('scdn.co')) {
+        return;
+    }
+
+    // Don't cache version check requests (app.js with timestamp)
+    if (event.request.url.includes('app.js?t=')) {
         return;
     }
 

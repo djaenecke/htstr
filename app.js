@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.13';
+const VERSION = '1.0.14';
 
 // Configuration
 const CONFIG = {
@@ -218,7 +218,16 @@ async function checkForUpdates() {
         const remoteVersion = match[1];
         if (compareVersions(remoteVersion, VERSION) > 0) {
             document.getElementById('update-banner').classList.remove('hidden');
-            document.getElementById('update-btn').addEventListener('click', () => {
+            document.getElementById('update-btn').addEventListener('click', async () => {
+                // Clear service worker cache and reload
+                if ('caches' in window) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(key => caches.delete(key)));
+                }
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(reg => reg.unregister()));
+                }
                 location.reload(true);
             });
         }
