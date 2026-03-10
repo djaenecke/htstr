@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.7';
+const VERSION = '1.0.8';
 
 // Configuration
 const CONFIG = {
@@ -194,6 +194,41 @@ function loadSettings() {
     elements.positionSelect.value = state.settings.startPosition;
     elements.showEditionCheckbox.checked = state.settings.showEdition;
     document.getElementById('version-display').textContent = `v${VERSION}`;
+    checkForUpdates();
+}
+
+async function checkForUpdates() {
+    try {
+        // Fetch app.js with cache bypass
+        const response = await fetch('app.js?t=' + Date.now());
+        if (!response.ok) return;
+
+        const text = await response.text();
+        const match = text.match(/const VERSION = '([^']+)'/);
+        if (!match) return;
+
+        const remoteVersion = match[1];
+        if (compareVersions(remoteVersion, VERSION) > 0) {
+            document.getElementById('update-banner').classList.remove('hidden');
+            document.getElementById('update-btn').addEventListener('click', () => {
+                location.reload(true);
+            });
+        }
+    } catch (e) {
+        console.warn('Version check failed', e);
+    }
+}
+
+function compareVersions(a, b) {
+    const partsA = a.split('.').map(Number);
+    const partsB = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+        const numA = partsA[i] || 0;
+        const numB = partsB[i] || 0;
+        if (numA > numB) return 1;
+        if (numA < numB) return -1;
+    }
+    return 0;
 }
 
 function saveSettings() {

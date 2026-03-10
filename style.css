@@ -88,6 +88,26 @@ body {
     color: #555;
 }
 
+#update-banner {
+    margin-top: 15px;
+    padding: 10px;
+    background: #1db954;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+#update-btn {
+    margin-left: 10px;
+    padding: 5px 15px;
+    background: #fff;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
 /* Buttons */
 .btn-primary {
     background: #1db954;
