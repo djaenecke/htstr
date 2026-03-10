@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.15';
+const VERSION = '1.0.16';
 
 // Configuration
 const CONFIG = {
@@ -711,6 +711,10 @@ async function replayTrack() {
         clearInterval(state.playbackTimer);
         state.playbackTimer = null;
     }
+    if (state.player && state.playback.isPlaying) {
+        await state.player.pause();
+    }
+    state.playback.isPlaying = false;
 
     // Reset to original start position and full duration
     const isFullSong = state.settings.duration === 0;
