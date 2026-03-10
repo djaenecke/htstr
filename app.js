@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.10';
+const VERSION = '1.0.11';
 
 // Configuration
 const CONFIG = {
@@ -83,6 +83,7 @@ const state = {
     playback: {
         startPosition: 0,      // Original calculated start position
         currentPosition: 0,    // Current position (for resume)
+        totalDuration: 0,      // Total playback duration
         remainingTime: 0,      // Remaining time (for resume)
         isPlaying: false
     },
@@ -667,6 +668,7 @@ async function playCurrentTrack() {
 
     // Store initial playback state
     state.playback.startPosition = startPosition;
+    state.playback.totalDuration = duration;
     state.playback.remainingTime = duration;
     state.playback.currentPosition = startPosition;
 
@@ -723,12 +725,14 @@ async function startPlaybackAt(position, duration) {
         const startTime = Date.now();
         const countdownThreshold = 10000;
         const circumference = 283;
+        const totalDuration = state.playback.totalDuration;
 
         if (state.playbackTimer) clearInterval(state.playbackTimer);
         state.playbackTimer = setInterval(() => {
             const elapsed = Date.now() - startTime;
             const remaining = Math.max(0, duration - elapsed);
-            const progress = elapsed / duration;
+            // Progress based on total duration, not just this segment
+            const progress = (totalDuration - remaining) / totalDuration;
 
             // Track current position for resume
             state.playback.currentPosition = position + elapsed;
