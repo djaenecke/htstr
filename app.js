@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.8';
+const VERSION = '1.0.9';
 
 // Configuration
 const CONFIG = {
@@ -100,7 +100,7 @@ const elements = {
     scannerVideo: document.getElementById('scanner-video'),
     playerContainer: document.getElementById('player-container'),
     trackInfo: document.getElementById('track-info'),
-    progressFill: document.getElementById('progress-fill'),
+    timerProgress: document.querySelector('.timer-progress'),
     timeDisplay: document.getElementById('time-display'),
     playBtn: document.getElementById('play-btn'),
     stopBtn: document.getElementById('stop-btn'),
@@ -678,18 +678,21 @@ async function playCurrentTrack() {
         const countdownThreshold = 10000; // 10 seconds
 
         if (state.playbackTimer) clearInterval(state.playbackTimer);
+        const circumference = 283; // 2 * PI * 45
         state.playbackTimer = setInterval(() => {
             const elapsed = Date.now() - startTime;
             const remaining = Math.max(0, duration - elapsed);
-            const progress = Math.min(100, (elapsed / duration) * 100);
+            const progress = elapsed / duration;
 
-            elements.progressFill.style.width = `${progress}%`;
-            elements.timeDisplay.textContent = `${formatTime(elapsed)} / ${formatTime(duration)}`;
+            // Update circular progress (stroke-dashoffset decreases as time passes)
+            const offset = circumference * (1 - progress);
+            elements.timerProgress.style.strokeDashoffset = offset;
+            elements.timeDisplay.textContent = formatTime(remaining);
 
             // Add countdown effect for last 10 seconds
             if (remaining <= countdownThreshold && remaining > 0) {
                 elements.playerContainer.classList.add('countdown');
-                elements.progressFill.classList.add('countdown');
+                elements.timerProgress.classList.add('countdown');
             }
 
             if (remaining <= 0) {
@@ -709,8 +712,8 @@ async function stopPlayback() {
         state.playbackTimer = null;
     }
 
-    elements.progressFill.style.width = '0%';
-    elements.progressFill.classList.remove('countdown');
+    elements.timerProgress.style.strokeDashoffset = 283;
+    elements.timerProgress.classList.remove('countdown');
     elements.playerContainer.classList.remove('countdown');
     elements.playBtn.disabled = false;
 

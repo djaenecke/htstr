@@ -219,23 +219,48 @@ body {
     margin-bottom: 15px;
 }
 
-#progress-bar {
-    height: 6px;
-    background: #333;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-bottom: 8px;
+/* Timer circle */
+#timer-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 15px auto;
 }
 
-#progress-fill {
+#timer-circle svg {
+    width: 100%;
     height: 100%;
-    background: #1db954;
-    width: 0%;
-    transition: width 0.1s linear;
+    transform: rotate(-90deg);
 }
 
-#progress-fill.countdown {
-    background: #e74c3c;
+.timer-bg {
+    fill: none;
+    stroke: #333;
+    stroke-width: 8;
+}
+
+.timer-progress {
+    fill: none;
+    stroke: #1db954;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+.timer-progress.countdown {
+    stroke: #e74c3c;
+}
+
+#time-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
 }
 
 /* Countdown effect for last 10 seconds */
@@ -245,8 +270,6 @@ body {
 
 #player-container.countdown #time-display {
     color: #e74c3c;
-    font-weight: bold;
-    font-size: 1.1rem;
 }
 
 @keyframes pulse {
