@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.14';
+const VERSION = '1.0.15';
 
 // Configuration
 const CONFIG = {
@@ -109,9 +109,8 @@ const elements = {
     trackInfo: document.getElementById('track-info'),
     timerProgress: document.querySelector('.timer-progress'),
     timeDisplay: document.getElementById('time-display'),
-    playBtn: document.getElementById('play-btn'),
-    stopBtn: document.getElementById('stop-btn'),
-    replayBtn: document.getElementById('replay-btn'),
+    playPauseBtn: document.getElementById('play-pause-btn'),
+    rewindBtn: document.getElementById('rewind-btn'),
     rescanBtn: document.getElementById('rescan-btn'),
     statusMessage: document.getElementById('status-message'),
     durationSelect: document.getElementById('duration-select'),
@@ -268,9 +267,8 @@ function setupEventListeners() {
         showScreen('settings');
     });
     elements.logoutBtn.addEventListener('click', logout);
-    elements.playBtn.addEventListener('click', resumePlayback);
-    elements.stopBtn.addEventListener('click', stopPlayback);
-    elements.replayBtn.addEventListener('click', replayTrack);
+    elements.playPauseBtn.addEventListener('click', togglePlayPause);
+    elements.rewindBtn.addEventListener('click', replayTrack);
     elements.rescanBtn.addEventListener('click', startScanning);
     elements.card.addEventListener('click', flipCard);
 }
@@ -684,12 +682,25 @@ async function playCurrentTrack() {
     await startPlaybackAt(startPosition, duration);
 }
 
-async function resumePlayback() {
+async function togglePlayPause() {
     if (!state.currentTrack || !state.deviceId) return;
-    if (state.playback.isPlaying) return;
 
-    // Resume from where we stopped
-    await startPlaybackAt(state.playback.currentPosition, state.playback.remainingTime);
+    if (state.playback.isPlaying) {
+        await stopPlayback(false);
+    } else {
+        await startPlaybackAt(state.playback.currentPosition, state.playback.remainingTime);
+    }
+}
+
+function updatePlayPauseButton() {
+    const playIcon = '<svg viewBox="0 0 24 24" class="icon"><polygon points="5,3 19,12 5,21" fill="currentColor"/></svg>';
+    const pauseIcon = '<svg viewBox="0 0 24 24" class="icon"><rect x="4" y="4" width="6" height="16" fill="currentColor"/><rect x="14" y="4" width="6" height="16" fill="currentColor"/></svg>';
+
+    if (state.playback.isPlaying) {
+        elements.playPauseBtn.innerHTML = pauseIcon + ' Pause';
+    } else {
+        elements.playPauseBtn.innerHTML = playIcon + ' Play';
+    }
 }
 
 async function replayTrack() {
@@ -708,8 +719,8 @@ async function replayTrack() {
     state.playback.remainingTime = duration;
     state.playback.currentPosition = state.playback.startPosition;
 
-    // Re-enable play button and reset timer display
-    elements.playBtn.disabled = false;
+    // Re-enable play/pause button and reset timer display
+    elements.playPauseBtn.disabled = false;
     elements.timerProgress.style.strokeDashoffset = 283;
 
     await startPlaybackAt(state.playback.startPosition, duration);
@@ -732,7 +743,7 @@ async function startPlaybackAt(position, duration) {
         });
 
         state.playback.isPlaying = true;
-        elements.playBtn.disabled = true;
+        updatePlayPauseButton();
         elements.trackInfo.textContent = `Card - Playing...`;
 
         // Start progress timer
@@ -786,8 +797,9 @@ async function stopPlayback(timeExpired = false) {
     elements.timerProgress.classList.remove('countdown');
     elements.playerContainer.classList.remove('countdown');
 
-    // Keep play button disabled if time expired, enable only for manual stop
-    elements.playBtn.disabled = timeExpired;
+    // Keep play/pause button disabled if time expired, enable only for manual stop
+    elements.playPauseBtn.disabled = timeExpired;
+    updatePlayPauseButton();
 
     if (state.player) {
         try {

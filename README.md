@@ -9,6 +9,7 @@ A custom web player for Hitster card game with enhanced playback controls.
 - Scan original Hitster QR codes (all editions auto-detected)
 - Configurable playback duration (15/30/45/60 seconds or full song)
 - Start position options: from beginning, random, 1st half, 2nd half
+- Play/Pause and Rewind controls
 - Visual countdown effect for last 10 seconds (pulsing red)
 - Flip card to reveal artist, year, and title after playback
 - Optional edition display
@@ -67,8 +68,9 @@ This app uses a Spotify Developer App in development mode. To use it, your Spoti
 2. Tap "Start Scanning"
 3. Point camera at a Hitster card QR code
 4. Music plays automatically via Spotify
-5. When playback stops, tap the card to reveal artist, year, and title
-6. Tap "Scan Again" for the next card
+5. Use Play/Pause to control playback, Rewind to restart from the beginning
+6. When playback ends, tap the card to reveal artist, year, and title
+7. Tap "Scan" for the next card
 
 ## Local Development
 
