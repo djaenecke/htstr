@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.16';
+const VERSION = '1.0.17';
 
 // Configuration
 const CONFIG = {
