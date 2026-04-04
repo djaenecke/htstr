@@ -55,21 +55,21 @@ const EDITIONS = [
 const EDITION_NAMES = {
     'hitster-de': 'Original Game',
     'hitster-de-aaaa0007': 'Schlager Party',
-    'hitster-de-aaaa0012': 'Summer Hits',
+    'hitster-de-aaaa0012': 'Summer Party',
     'hitster-de-aaaa0015': 'Guilty Pleasures',
     'hitster-de-aaaa0019': 'Bingo',
-    'hitster-de-aaaa0025': 'Rock',
+    'hitster-de-aaaa0025': 'Bayern 1',
     'hitster-de-aaaa0026': 'Movies & TV Soundtracks',
-    'hitster-de-aaaa0039': 'Christmas',
+    'hitster-de-aaaa0039': 'Rock',
     'hitster-de-aaaa0040': 'Celebration',
     'hitster-de-aaaa0042': 'Holiday Mix',
     'hitster-fr': 'Original (FR)',
-    'hitster-fr-aaaa0031': 'Chansons Francaises',
+    'hitster-fr-aaaa0031': 'Summer Party (FR)',
     'hitster-nl': '100% NL',
-    'hitster-nordics': 'Nordic Edition',
-    'hitster-pl-aaae0001': 'Polish Edition',
-    'hitster-hu-aaae0003': 'Hungarian Edition',
-    'hitster-ca-aaad0001': 'Canadian Edition'
+    'hitster-nordics': 'Nordics / Suomi',
+    'hitster-pl-aaae0001': 'Polska',
+    'hitster-hu-aaae0003': 'Magyarország',
+    'hitster-ca-aaad0001': 'Canada'
 };
 
 // App State

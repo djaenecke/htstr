@@ -21,21 +21,21 @@ A custom web player for Hitster card game with enhanced playback controls.
 |---------|------|
 | DE | Original Game |
 | DE-AAAA0007 | Schlager Party |
-| DE-AAAA0012 | Summer Hits |
+| DE-AAAA0012 | Summer Party |
 | DE-AAAA0015 | Guilty Pleasures |
 | DE-AAAA0019 | Bingo |
-| DE-AAAA0025 | Rock |
+| DE-AAAA0025 | Bayern 1 |
 | DE-AAAA0026 | Movies & TV Soundtracks |
-| DE-AAAA0039 | Christmas |
+| DE-AAAA0039 | Rock |
 | DE-AAAA0040 | Celebration |
 | DE-AAAA0042 | Holiday Mix |
 | FR | Original (FR) |
-| FR-AAAA0031 | Chansons Francaises |
+| FR-AAAA0031 | Summer Party (FR) |
 | NL | 100% NL |
-| Nordics | Nordic Edition |
-| PL-AAAE0001 | Polish Edition |
-| HU-AAAE0003 | Hungarian Edition |
-| CA-AAAD0001 | Canadian Edition |
+| Nordics | Nordics / Suomi |
+| PL-AAAE0001 | Polska |
+| HU-AAAE0003 | Magyarország |
+| CA-AAAD0001 | Canada |
 
 ## Requirements
 
