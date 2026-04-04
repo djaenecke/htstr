@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.18';
+const VERSION = '1.1.0';
 
 // Configuration
 const CONFIG = {
@@ -391,11 +391,12 @@ async function loadCardData() {
                 const cardNum = parseInt(cols[colIndex.card]);
                 if (isNaN(cardNum)) continue;
 
+                const isrc = colIndex.isrc !== undefined ? (cols[colIndex.isrc] || '').trim() : null;
                 state.cardData[edition][cardNum] = {
-                    title: cols[colIndex.title] || '',
-                    artist: cols[colIndex.artist] || '',
-                    year: cols[colIndex.year] || '',
-                    isrc: colIndex.isrc !== undefined ? cols[colIndex.isrc] : null
+                    title: (cols[colIndex.title] || '').trim(),
+                    artist: (cols[colIndex.artist] || '').trim(),
+                    year: (cols[colIndex.year] || '').trim(),
+                    isrc: isrc || null  // Convert empty string to null
                 };
                 totalCards++;
             }
