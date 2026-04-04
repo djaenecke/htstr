@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.0.17';
+const VERSION = '1.0.18';
 
 // Configuration
 const CONFIG = {
@@ -218,16 +218,20 @@ async function checkForUpdates() {
         if (compareVersions(remoteVersion, VERSION) > 0) {
             document.getElementById('update-banner').classList.remove('hidden');
             document.getElementById('update-btn').addEventListener('click', async () => {
-                // Clear service worker cache and reload
+                // Clear service worker cache
                 if ('caches' in window) {
                     const keys = await caches.keys();
                     await Promise.all(keys.map(key => caches.delete(key)));
                 }
+                // Unregister service worker
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
                     await Promise.all(registrations.map(reg => reg.unregister()));
                 }
-                location.reload(true);
+                // Force fresh load with cache-busting URL
+                const url = new URL(window.location.href);
+                url.searchParams.set('_refresh', Date.now());
+                window.location.replace(url.toString());
             });
         }
     } catch (e) {
