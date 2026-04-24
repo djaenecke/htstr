@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hitster-v3';
+const CACHE_NAME = 'hitster-v4';
 const ASSETS = [
     './',
     './index.html',
@@ -44,17 +44,40 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+    const url = event.request.url;
+
     // Don't cache Spotify API calls
-    if (event.request.url.includes('spotify.com') ||
-        event.request.url.includes('scdn.co')) {
+    if (url.includes('spotify.com') || url.includes('scdn.co')) {
         return;
     }
 
     // Don't cache version check requests (app.js with timestamp)
-    if (event.request.url.includes('app.js?t=')) {
+    if (url.includes('app.js?t=')) {
         return;
     }
 
+    // Network-first for HTML, JS, CSS, manifest - so updates propagate
+    const isAppResource = url.endsWith('/') ||
+        url.endsWith('.html') ||
+        url.endsWith('.js') ||
+        url.endsWith('.css') ||
+        url.endsWith('manifest.json');
+
+    if (isAppResource) {
+        event.respondWith(
+            fetch(event.request)
+                .then(response => {
+                    // Update cache with fresh copy
+                    const copy = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+                    return response;
+                })
+                .catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
+    // Cache-first for everything else (CSV data, images)
     event.respondWith(
         caches.match(event.request)
             .then(cached => cached || fetch(event.request))
