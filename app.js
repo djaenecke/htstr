@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 
 // Configuration
 const CONFIG = {
@@ -859,6 +859,7 @@ function startCountdown() {
     elements.timerProgress.style.strokeDashoffset = 0;
     elements.timeDisplay.textContent = formatTime(duration);
 
+    let lastTickSecond = -1;
     state.countdownTimer = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const remaining = Math.max(0, duration - elapsed);
@@ -866,11 +867,35 @@ function startCountdown() {
         elements.timerProgress.style.strokeDashoffset = circumference * progress;
         elements.timeDisplay.textContent = formatTime(remaining);
 
+        const remainingSec = Math.ceil(remaining / 1000);
+        if (remainingSec > 0 && remainingSec <= 5 && remainingSec !== lastTickSecond) {
+            lastTickSecond = remainingSec;
+            playTick();
+        }
+
         if (remaining <= 0) {
             cancelCountdown();
             flashAndBeep();
         }
     }, 100);
+}
+
+function playTick() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 1200;
+        osc.type = 'square';
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {
+        console.warn('Tick failed', e);
+    }
 }
 
 function cancelCountdown() {
