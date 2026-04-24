@@ -283,6 +283,10 @@ body {
     stroke: #e74c3c;
 }
 
+.timer-progress.post-countdown {
+    stroke: #3498db;
+}
+
 #time-display {
     position: absolute;
     top: 50%;
@@ -309,6 +313,16 @@ body {
     50% {
         box-shadow: 0 0 20px 5px rgba(231, 76, 60, 0.5);
     }
+}
+
+body.flash {
+    animation: flash-screen 0.6s ease-in-out;
+}
+
+@keyframes flash-screen {
+    0%, 100% { background-color: inherit; }
+    25%, 75% { background-color: #fff; }
+    50% { background-color: #e74c3c; }
 }
 
 #time-display {

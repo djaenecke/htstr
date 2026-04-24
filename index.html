@@ -97,6 +97,23 @@
                         Show Edition
                     </label>
                 </div>
+                <div class="setting checkbox-setting">
+                    <label>
+                        <input type="checkbox" id="countdown-enabled">
+                        Countdown after playback
+                    </label>
+                </div>
+                <div class="setting" id="countdown-duration-setting">
+                    <label for="countdown-duration-select">Countdown Duration</label>
+                    <select id="countdown-duration-select">
+                        <option value="10">10 seconds</option>
+                        <option value="15">15 seconds</option>
+                        <option value="20" selected>20 seconds</option>
+                        <option value="30">30 seconds</option>
+                        <option value="45">45 seconds</option>
+                        <option value="60">60 seconds</option>
+                    </select>
+                </div>
                 <button id="start-game-btn" class="btn-primary"><svg viewBox="0 0 24 24" class="icon"><rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/><rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" fill="none"/></svg> Start Scanning</button>
                 <button id="logout-btn" class="btn-secondary"><svg viewBox="0 0 24 24" class="icon"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Logout</button>
                 <div id="version-display"></div>

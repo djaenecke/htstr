@@ -1,5 +1,5 @@
 // Version - increment with each release
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 
 // Configuration
 const CONFIG = {
@@ -90,8 +90,11 @@ const state = {
     settings: {
         duration: 30,
         startPosition: 'start', // 'start', 'random', 'first-half', 'second-half'
-        showEdition: false
-    }
+        showEdition: false,
+        countdownEnabled: false,
+        countdownDuration: 20
+    },
+    countdownTimer: null
 };
 
 // DOM Elements
@@ -116,6 +119,9 @@ const elements = {
     durationSelect: document.getElementById('duration-select'),
     positionSelect: document.getElementById('position-select'),
     showEditionCheckbox: document.getElementById('show-edition'),
+    countdownEnabledCheckbox: document.getElementById('countdown-enabled'),
+    countdownDurationSelect: document.getElementById('countdown-duration-select'),
+    countdownDurationSetting: document.getElementById('countdown-duration-setting'),
     editionDisplay: document.getElementById('edition-display'),
     card: document.getElementById('card'),
     cardArtist: document.querySelector('.card-artist'),
@@ -200,6 +206,9 @@ function loadSettings() {
     elements.durationSelect.value = state.settings.duration;
     elements.positionSelect.value = state.settings.startPosition;
     elements.showEditionCheckbox.checked = state.settings.showEdition;
+    elements.countdownEnabledCheckbox.checked = state.settings.countdownEnabled;
+    elements.countdownDurationSelect.value = state.settings.countdownDuration;
+    updateCountdownDurationVisibility();
     document.getElementById('version-display').textContent = `v${VERSION}`;
     checkForUpdates();
 }
@@ -255,11 +264,19 @@ function saveSettings() {
     state.settings.duration = parseInt(elements.durationSelect.value) || 30;
     state.settings.startPosition = elements.positionSelect.value;
     state.settings.showEdition = elements.showEditionCheckbox.checked;
+    state.settings.countdownEnabled = elements.countdownEnabledCheckbox.checked;
+    state.settings.countdownDuration = parseInt(elements.countdownDurationSelect.value) || 20;
     localStorage.setItem('hitster_settings', JSON.stringify(state.settings));
+}
+
+function updateCountdownDurationVisibility() {
+    elements.countdownDurationSetting.style.display =
+        elements.countdownEnabledCheckbox.checked ? '' : 'none';
 }
 
 function setupEventListeners() {
     elements.loginBtn.addEventListener('click', () => login());
+    elements.countdownEnabledCheckbox.addEventListener('change', updateCountdownDurationVisibility);
     elements.startGameBtn.addEventListener('click', () => {
         saveSettings();
         showScreen('main');
@@ -432,6 +449,7 @@ let scannerStream = null;
 let scannerAnimationId = null;
 
 async function startScanning() {
+    cancelCountdown();
     stopPlayback();
     elements.playerContainer.classList.add('hidden');
     elements.scannerContainer.classList.remove('hidden');
@@ -693,6 +711,7 @@ async function togglePlayPause() {
     if (state.playback.isPlaying) {
         await stopPlayback(false);
     } else {
+        cancelCountdown();
         await startPlaybackAt(state.playback.currentPosition, state.playback.remainingTime);
     }
 }
@@ -710,6 +729,8 @@ function updatePlayPauseButton() {
 
 async function replayTrack() {
     if (!state.currentTrack || !state.deviceId) return;
+
+    cancelCountdown();
 
     // Stop current playback first
     if (state.playbackTimer) {
@@ -821,6 +842,63 @@ async function stopPlayback(timeExpired = false) {
     if (state.currentTrack) {
         elements.trackInfo.textContent = `Card - Tap card to reveal`;
         elements.card.classList.add('flippable');
+    }
+
+    if (timeExpired && state.settings.countdownEnabled) {
+        startCountdown();
+    }
+}
+
+function startCountdown() {
+    cancelCountdown();
+    const duration = state.settings.countdownDuration * 1000;
+    const circumference = 283;
+    const startTime = Date.now();
+
+    elements.timerProgress.classList.add('post-countdown');
+    elements.timerProgress.style.strokeDashoffset = 0;
+    elements.timeDisplay.textContent = formatTime(duration);
+
+    state.countdownTimer = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, duration - elapsed);
+        const progress = elapsed / duration;
+        elements.timerProgress.style.strokeDashoffset = circumference * progress;
+        elements.timeDisplay.textContent = formatTime(remaining);
+
+        if (remaining <= 0) {
+            cancelCountdown();
+            flashAndBeep();
+        }
+    }, 100);
+}
+
+function cancelCountdown() {
+    if (state.countdownTimer) {
+        clearInterval(state.countdownTimer);
+        state.countdownTimer = null;
+    }
+    elements.timerProgress.classList.remove('post-countdown');
+}
+
+function flashAndBeep() {
+    document.body.classList.add('flash');
+    setTimeout(() => document.body.classList.remove('flash'), 600);
+
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+        console.warn('Beep failed', e);
     }
 }
 
